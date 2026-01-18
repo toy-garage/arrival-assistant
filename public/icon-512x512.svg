@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="512" height="512" fill="#4F46E5" rx="76.8"/>
+
+  <!-- 시계 원 -->
+  <circle cx="256" cy="230.4" r="143.36" fill="white" opacity="0.9"/>
+
+  <!-- 시계 바늘 -->
+  <line x1="256" y1="230.4" x2="256" y2="143.36"
+        stroke="#4F46E5" stroke-width="25.6" stroke-linecap="round"/>
+  <line x1="256" y1="230.4" x2="332.8" y2="230.4"
+        stroke="#4F46E5" stroke-width="20.48" stroke-linecap="round"/>
+
+  <!-- 중심점 -->
+  <circle cx="256" cy="230.4" r="20.48" fill="#4F46E5"/>
+
+  <!-- 위치 핀 -->
+  <path d="M 256 384
+           L 230.4 348.16
+           C 179.2 348.16 179.2 296.96 256 296.96
+           C 332.8 296.96 332.8 348.16 281.6 348.16
+           Z"
+           fill="white" opacity="0.9"/>
+  <circle cx="256" cy="317.44" r="15.36" fill="#4F46E5"/>
+</svg>

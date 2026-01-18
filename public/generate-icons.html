@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin: 10px;
+    }
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #4338CA;
+    }
+    .icon-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Arrival Assistant - Icon Generator</h1>
+  <p>이 페이지는 앱 아이콘을 자동으로 생성하고 다운로드합니다.</p>
+
+  <div class="icon-preview" id="preview"></div>
+
+  <div>
+    <button onclick="downloadAll()">모든 아이콘 다운로드</button>
+  </div>
+
+  <script>
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // 배경 - 보라색 라운드 사각형
+      ctx.fillStyle = '#4F46E5';
+      const radius = size * 0.15;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // 시계 원
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.beginPath();
+      ctx.arc(size * 0.5, size * 0.45, size * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 시계 바늘
+      ctx.strokeStyle = '#4F46E5';
+      ctx.lineCap = 'round';
+
+      // 분침
+      ctx.lineWidth = size * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.45);
+      ctx.lineTo(size * 0.5, size * 0.28);
+      ctx.stroke();
+
+      // 시침
+      ctx.lineWidth = size * 0.04;
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.45);
+      ctx.lineTo(size * 0.65, size * 0.45);
+      ctx.stroke();
+
+      // 중심점
+      ctx.fillStyle = '#4F46E5';
+      ctx.beginPath();
+      ctx.arc(size * 0.5, size * 0.45, size * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 위치 핀
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.75);
+      ctx.lineTo(size * 0.45, size * 0.68);
+      ctx.quadraticCurveTo(size * 0.35, size * 0.68, size * 0.35, size * 0.58);
+      ctx.quadraticCurveTo(size * 0.35, size * 0.53, size * 0.5, size * 0.53);
+      ctx.quadraticCurveTo(size * 0.65, size * 0.53, size * 0.65, size * 0.58);
+      ctx.quadraticCurveTo(size * 0.65, size * 0.68, size * 0.55, size * 0.68);
+      ctx.closePath();
+      ctx.fill();
+
+      // 핀 중심점
+      ctx.fillStyle = '#4F46E5';
+      ctx.beginPath();
+      ctx.arc(size * 0.5, size * 0.58, size * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      return canvas;
+    }
+
+    function downloadCanvas(canvas, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function generateIcons() {
+      const sizes = [16, 32, 192, 512];
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+
+      sizes.forEach(size => {
+        const canvas = createIcon(size);
+        canvas.style.width = '150px';
+        canvas.style.height = '150px';
+
+        const container = document.createElement('div');
+        const label = document.createElement('div');
+        label.textContent = `${size}x${size}`;
+        label.style.textAlign = 'center';
+        label.style.marginTop = '5px';
+
+        const btn = document.createElement('button');
+        btn.textContent = '다운로드';
+        btn.onclick = () => {
+          const filename = size === 16 || size === 32
+            ? `favicon-${size}x${size}.png`
+            : `icon-${size}x${size}.png`;
+          downloadCanvas(canvas, filename);
+        };
+
+        container.appendChild(canvas);
+        container.appendChild(label);
+        container.appendChild(btn);
+        preview.appendChild(container);
+
+        // 자동으로 파일로 저장 (브라우저에서 실행 시)
+        window[`canvas_${size}`] = canvas;
+      });
+    }
+
+    function downloadAll() {
+      downloadCanvas(window.canvas_16, 'favicon-16x16.png');
+      setTimeout(() => downloadCanvas(window.canvas_32, 'favicon-32x32.png'), 200);
+      setTimeout(() => downloadCanvas(window.canvas_192, 'icon-192x192.png'), 400);
+      setTimeout(() => downloadCanvas(window.canvas_512, 'icon-512x512.png'), 600);
+      setTimeout(() => {
+        // Apple touch icon (180x180)
+        const appleIcon = createIcon(180);
+        downloadCanvas(appleIcon, 'apple-touch-icon.png');
+      }, 800);
+      setTimeout(() => {
+        // favicon.ico용 (32x32)
+        const faviconIcon = createIcon(32);
+        downloadCanvas(faviconIcon, 'favicon.png');
+      }, 1000);
+    }
+
+    // 페이지 로드 시 자동 생성
+    generateIcons();
+  </script>
+</body>
+</html>
