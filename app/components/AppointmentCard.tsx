@@ -21,10 +21,10 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
 
       const startTime = parseISO(appointment.startTime);
       const arrivalTime = subMinutes(startTime, 5); // 5분 전 도착
-      const departureTime = subMinutes(arrivalTime, appointment.travelDuration + appointment.preparationTime);
+      const prepStartTime = subMinutes(arrivalTime, appointment.travelDuration + appointment.preparationTime);
 
       const now = new Date();
-      const minutesUntil = differenceInMinutes(departureTime, now);
+      const minutesUntil = differenceInMinutes(prepStartTime, now);
 
       setTimeUntilDeparture(minutesUntil);
     };
@@ -37,8 +37,13 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
 
   const startTime = parseISO(appointment.startTime);
   const arrivalTime = subMinutes(startTime, 5);
-  const departureTime = appointment.travelDuration
+
+  // 준비 시작 시간과 출발 시간을 구분
+  const preparationStartTime = appointment.travelDuration
     ? subMinutes(arrivalTime, appointment.travelDuration + appointment.preparationTime)
+    : null;
+  const departureTime = appointment.travelDuration
+    ? subMinutes(arrivalTime, appointment.travelDuration)
     : null;
 
   const getStatusColor = () => {
@@ -50,13 +55,13 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
 
   const getStatusText = () => {
     if (!timeUntilDeparture) return '경로 계산 중';
-    if (timeUntilDeparture <= 0) return '지금 출발!';
-    if (timeUntilDeparture <= 15) return `${timeUntilDeparture}분 후 출발`;
-    return `${Math.floor(timeUntilDeparture / 60)}시간 ${timeUntilDeparture % 60}분 후 출발`;
+    if (timeUntilDeparture <= 0) return '지금 준비!';
+    if (timeUntilDeparture <= 15) return `${timeUntilDeparture}분 후 준비`;
+    return `${Math.floor(timeUntilDeparture / 60)}시간 ${timeUntilDeparture % 60}분 후 준비`;
   };
 
   const handleAddToCalendar = async () => {
-    if (!departureTime || isAddingToCalendar) return;
+    if (!preparationStartTime || isAddingToCalendar) return;
 
     setIsAddingToCalendar(true);
     try {
@@ -74,7 +79,7 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
         body: JSON.stringify({
           accessToken,
           originalEventId: appointment.id,
-          departureTime: departureTime.toISOString(),
+          departureTime: preparationStartTime.toISOString(),
           destination: appointment.location,
           originalEventStart: appointment.startTime,
         }),
@@ -128,27 +133,43 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
         </div>
       </div>
 
-      {departureTime && (
+      {preparationStartTime && departureTime && (
         <div className="space-y-2">
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-indigo-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-700">출발 시간</span>
-              <span className="text-xl font-bold text-indigo-900">
-                {format(departureTime, 'HH:mm', { locale: ko })}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                준비 {appointment.preparationTime}분
+          {/* 타임라인 */}
+          <div className="space-y-3">
+            {/* 준비 시작 */}
+            <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  <div>
+                    <p className="text-xs text-purple-600 font-medium">준비 시작</p>
+                    <p className="text-sm text-gray-600">{appointment.preparationTime}분 준비</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-purple-900">
+                  {format(preparationStartTime, 'HH:mm', { locale: ko })}
+                </span>
               </div>
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-                이동 {appointment.travelDuration}분
+            </div>
+
+            {/* 출발 시간 */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-3 border-2 border-indigo-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-xs text-indigo-600 font-medium">출발</p>
+                    <p className="text-sm text-gray-600">{appointment.travelDuration}분 이동</p>
+                  </div>
+                </div>
+                <span className="text-xl font-bold text-indigo-900">
+                  {format(departureTime, 'HH:mm', { locale: ko })}
+                </span>
               </div>
             </div>
           </div>
@@ -179,7 +200,7 @@ export default function AppointmentCard({ appointment }: AppointmentCardProps) {
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                출발 시간 캘린더에 추가
+                준비 시작 알림 캘린더에 추가
               </>
             )}
           </button>
