@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // 출발 시간 일정 생성
     const event = {
       summary: `🚗 ${destination} 출발`,
-      description: `${destination} 약속을 위한 출발 시간입니다.\n\nCreated by Arrival Assistant`,
+      description: `지금 출발하세요!\n목적지: ${destination}\n\nCreated by Arrival Assistant`,
       start: {
         dateTime: departureTime,
         timeZone: 'Asia/Seoul',
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: 'popup', minutes: 10 },
+          { method: 'popup', minutes: 5 },
         ],
       },
       colorId: '9', // 파란색으로 구분
